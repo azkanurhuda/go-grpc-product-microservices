@@ -48,6 +48,6 @@ COPY --from=builder /go/bin/auth /go/bin/auth
 USER appuser
 
 # Download necessary Go modules
-EXPOSE $PORT
+EXPOSE 50051
 
 ENTRYPOINT ["/go/bin/auth"]

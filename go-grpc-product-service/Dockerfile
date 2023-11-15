@@ -48,6 +48,6 @@ COPY --from=builder /go/bin/product /go/bin/product
 USER appuser
 
 # Download necessary Go modules
-EXPOSE $PORT
+EXPOSE 50052
 
 ENTRYPOINT ["/go/bin/product"]

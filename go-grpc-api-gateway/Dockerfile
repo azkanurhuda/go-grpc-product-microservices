@@ -48,6 +48,6 @@ COPY --from=builder /go/bin/gateway /go/bin/gateway
 USER appuser
 
 # Download necessary Go modules
-EXPOSE $PORT
+EXPOSE 3000
 
 ENTRYPOINT ["/go/bin/gateway"]
