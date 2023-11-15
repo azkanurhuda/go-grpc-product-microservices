@@ -1,0 +1,119 @@
+version: "3.9"
+
+services:
+  postgres_auth_db:
+    container_name: postgres_auth_db
+    image: postgres:alpine
+    restart: always
+    volumes:
+      - postgres-auth-data:/var/lib/postgresql
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: auth_service
+    networks:
+      - internal-app-network
+
+  postgres_product_db:
+    container_name: postgres_product_db
+    image: postgres:alpine
+    restart: always
+    volumes:
+      - postgres-product-data:/var/lib/postgresql
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: product_service
+    networks:
+      - internal-app-network
+
+  postgres_order_db:
+    container_name: postgres_order_db
+    image: postgres:alpine
+    restart: always
+    volumes:
+      - postgres-order-data:/var/lib/postgresql
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: order_service
+    networks:
+      - internal-app-network
+
+  auth_service:
+    container_name: auth_service
+    restart: on-failure
+    build:
+      context: ./go-grpc-auth-service
+      dockerfile: Dockerfile
+    ports:
+      - 50051:50051
+    depends_on:
+      - postgres_auth_db
+    networks:
+      - internal-app-network
+
+  product_service:
+    container_name: product_service
+    restart: on-failure
+    build:
+      context: ./go-grpc-product-service
+      dockerfile: Dockerfile
+    ports:
+      - 50052:50052
+    depends_on:
+      - postgres_product_db
+    networks:
+      - internal-app-network
+
+  order_service:
+    container_name: order_service
+    restart: on-failure
+    build:
+      context: ./go-grpc-order-service
+      dockerfile: Dockerfile
+    ports:
+      - 50053:50053
+    depends_on:
+      - postgres_order_db
+    networks:
+      - internal-app-network
+
+  api_gateway:
+    container_name: api_gateway
+    restart: on-failure
+    build:
+      context: ./go-grpc-api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    depends_on:
+      - product_service
+      - order_service
+      - auth_service
+    networks:
+      - internal-app-network
+
+volumes:
+  postgres-auth-data:
+    name: postgres-auth-data
+  postgres-product-data:
+    name: postgres-product-data
+  postgres-order-data:
+    name: postgres-order-data
+
+networks:
+  internal-app-network:
+    driver: bridge
