@@ -7,10 +7,6 @@ services:
     restart: always
     volumes:
       - postgres-auth-data:/var/lib/postgresql
-    expose:
-      - 5432
-    ports:
-      - 5432:5432
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -24,10 +20,6 @@ services:
     restart: always
     volumes:
       - postgres-product-data:/var/lib/postgresql
-    expose:
-      - 5432
-    ports:
-      - 5432:5432
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -41,14 +33,25 @@ services:
     restart: always
     volumes:
       - postgres-order-data:/var/lib/postgresql
-    expose:
-      - 5432
-    ports:
-      - 5432:5432
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: order_service
+    networks:
+      - internal-app-network
+
+  api_gateway:
+    container_name: api_gateway
+    restart: on-failure
+    build:
+      context: ./go-grpc-api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    depends_on:
+      - product_service
+      - order_service
+      - auth_service
     networks:
       - internal-app-network
 
@@ -88,21 +91,6 @@ services:
       - 50053:50053
     depends_on:
       - postgres_order_db
-    networks:
-      - internal-app-network
-
-  api_gateway:
-    container_name: api_gateway
-    restart: on-failure
-    build:
-      context: ./go-grpc-api-gateway
-      dockerfile: Dockerfile
-    ports:
-      - 3000:3000
-    depends_on:
-      - product_service
-      - order_service
-      - auth_service
     networks:
       - internal-app-network
 
